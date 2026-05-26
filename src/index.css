@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #F9F8F4;
+  --color-ink: #2C2C2C;
+  --color-slate-dark: #121212;
+  --color-bone: #E0E0E0;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* Base Editor Styles */
+.tiptap {
+  height: 100%;
+  outline: none;
+}
+
+.tiptap .ProseMirror {
+  min-height: 100%;
+  outline: none;
+  font-family: var(--font-serif);
+  color: var(--color-ink);
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+/* Dark mode text color */
+@media (prefers-color-scheme: dark) {
+  .tiptap .ProseMirror {
+    color: var(--color-bone);
+  }
+}
+
+/* Typography Elements */
+.tiptap p {
+  margin-bottom: 1.25rem;
+}
+
+.tiptap h1, .tiptap h2, .tiptap h3 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.tiptap h1 { font-size: 2.25rem; }
+.tiptap h2 { font-size: 1.75rem; }
+.tiptap h3 { font-size: 1.375rem; }
+
+.tiptap blockquote {
+  border-left: 3px solid var(--color-ink);
+  padding-left: 1.25rem;
+  margin-left: 0;
+  margin-bottom: 1.25rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tiptap blockquote {
+    border-left-color: var(--color-bone);
+  }
+}
+
+.tiptap code {
+  font-family: var(--font-mono);
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tiptap code {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.tiptap pre {
+  font-family: var(--font-mono);
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+}
+
+.tiptap pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* Task Lists */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 1.25rem;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li label {
+  margin-top: 0.25rem;
+}
+
+.tiptap ul[data-type="taskList"] li label input[type="checkbox"] {
+  accent-color: var(--color-ink);
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+/* Placeholder */
+.tiptap .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-ink);
+  opacity: 0.3;
+  pointer-events: none;
+  height: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tiptap .ProseMirror p.is-editor-empty:first-child::before {
+    color: var(--color-bone);
+  }
+}
+
+/* Tippy Overrides */
+.tippy-box[data-theme~='light-border'] {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+.tippy-box[data-theme~='light-border'] .tippy-content {
+  padding: 0;
+}
+.tippy-box[data-theme~='light-border'] .tippy-arrow {
+  display: none;
+}
+
+/* Minimalist Tables */
+.tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1.5rem 0;
+  overflow: hidden;
+}
+
+.tiptap table td,
+.tiptap table th {
+  min-width: 1em;
+  border: 1px dashed transparent;
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.tiptap table:hover td,
+.tiptap table:hover th {
+  border-color: var(--color-ink);
+  opacity: 0.3;
+}
+
+.tiptap table td:focus,
+.tiptap table th:focus,
+.tiptap table .selectedCell {
+  border-color: var(--color-ink) !important;
+  opacity: 1 !important;
+  background-color: rgba(0,0,0,0.02);
+}
+
+.tiptap table th {
+  font-weight: 600;
+  text-align: left;
+  background-color: rgba(0,0,0,0.02);
+}
+
+/* Images */
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  display: block;
+}
+
+.tiptap img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Focus Mode Styling */
+.tiptap.is-focus-mode .ProseMirror > * {
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
+}
+
+.tiptap.is-focus-mode .ProseMirror > .has-focus {
+  opacity: 1;
+}
+
+/* Typewriter Mode Padding */
+.tiptap.is-typewriter-mode .ProseMirror {
+  padding-bottom: 50vh !important;
+}
+
+/* Highlight extension */
+.tiptap mark {
+  background-color: #fef08a;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* Print / PDF Export Styles */
+@media print {
+  body > *:not(#root) { display: none !important; }
+  #root > *:not(.print-area) { display: none !important; }
+  .tiptap .ProseMirror {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    color: #000 !important;
+  }
+  .tiptap .ProseMirror .has-focus { opacity: 1 !important; }
+  .tiptap img { max-width: 100% !important; page-break-inside: avoid; }
+  .tiptap table { page-break-inside: avoid; border: 1px solid #ccc !important; }
+  .tiptap table td, .tiptap table th { border: 1px solid #ccc !important; }
+
+  @page {
+    margin: 2cm;
+  }
+}
