@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react'
 import Editor from './components/Editor'
+import ErrorBoundary from './components/ErrorBoundary'
 import Sidebar from './components/Sidebar'
 import CommandPalette from './components/CommandPalette'
 import useStore from './store/useStore'
@@ -138,7 +139,9 @@ function App() {
 
       <div className="pt-20 pb-12 px-6 flex-1 overflow-y-auto">
         <div className="max-w-[680px] mx-auto pb-32 print-area">
-          <Editor />
+          <ErrorBoundary>
+            <Editor />
+          </ErrorBoundary>
         </div>
       </div>
     </main>
