@@ -1,37 +1,32 @@
-import { Component, type ReactNode } from 'react'
+import { Component } from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 
-interface Props {
-  children: ReactNode
-}
-
-interface State {
-  hasError: boolean
-  error: Error | null
-}
-
-class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+export class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error?: Error }> {
+  constructor(props: { children: ReactNode }) {
     super(props)
-    this.state = { hasError: false, error: null }
+    this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error) {
     return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Zenith ErrorBoundary:', error, info)
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-          <h1>Something went wrong.</h1>
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif', color: '#333' }}>
+          <h2>Something went wrong.</h2>
+          <pre style={{ background: '#f5f5f5', padding: '1rem', borderRadius: '4px' }}>
             {this.state.error?.message}
           </pre>
+          <p>Try restarting the app.</p>
         </div>
       )
     }
     return this.props.children
   }
 }
-
-export default ErrorBoundary

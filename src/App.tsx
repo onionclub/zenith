@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react'
 import Editor from './components/Editor'
-import ErrorBoundary from './components/ErrorBoundary'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import Sidebar from './components/Sidebar'
 import CommandPalette from './components/CommandPalette'
 import useStore from './store/useStore'

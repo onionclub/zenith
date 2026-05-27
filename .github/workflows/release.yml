@@ -1,18 +1,16 @@
 name: Release Zenith
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   release:
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -23,11 +21,14 @@ jobs:
             target: 'x86_64-pc-windows-msvc'
 
     runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Rust setup
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -36,17 +37,23 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+          cache-on-failure: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'npm'
+          node-version: '20'
 
-      - name: Install frontend dependencies
-        run: npm install
+      - name: Install frontend deps
+        run: npm ci
 
-      - name: Build the app
+      - name: Build Tauri app
+        run: npm run tauri build -- --verbose
+        env:
+          RUST_BACKTRACE: 1
+          RUST_LOG: tauri=debug
+
+      - name: Release with tauri-action
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

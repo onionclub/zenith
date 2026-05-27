@@ -9,7 +9,7 @@
     "window-state:default",
     "asset:default",
     {
-      "identifier": "fs:default",
+      "identifier": "fs:scope",
       "allow": [
         { "path": "$APPDATA/**" },
         { "path": "$APPDATA/documents/**" },
