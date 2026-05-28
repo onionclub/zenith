@@ -47,32 +47,38 @@ jobs:
       - name: Install frontend deps
         run: npm ci
 
-      - name: Build and Release
-        uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri app
+        run: npm run tauri build -- --target ${{ matrix.target }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUST_BACKTRACE: 1
+
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v2
         with:
-          tagName: v__VERSION__
-          releaseName: 'Zenith v__VERSION__'
-          releaseBody: |
-            ## Zenith v__VERSION__
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            src-tauri/target/*/release/bundle/dmg/*.dmg
+            src-tauri/target/*/release/bundle/macos/*.app.tar.gz
+            src-tauri/target/*/release/bundle/nsis/*.exe
+            src-tauri/target/*/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/*.app.tar.gz
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+          fail_on_unmatched_files: false
+          body: |
+            ## Zenith
 
-            Offline-first, premium text editor.
-
-            ### Downloads
-            - **macOS**: `.dmg` for Apple Silicon (M1/M2/M3/M4)
-            - **Windows**: `.msi` and `.exe` installer for x64
+            Offline-first, premium text editor. Cross-platform for macOS (Apple Silicon) and Windows x64.
 
             ### What's New
-            - Read Aloud (TTS) feature with voice selection
+            - Read Aloud (TTS) with voice selection
             - Adjustable page width with draggable borders
             - UI Scale settings (0.10x - 5.00x)
-            - Companion system with animated characters
+            - Companion system with 6 animated characters
             - 13 bundled fonts (offline)
+            - Editor font size control
             - Cross-platform macOS ARM + Windows x64 builds
 
-            > macOS: Open the DMG and drag Zenith to Applications. If Gatekeeper blocks it, right-click → Open.
-            > Windows: Run the installer. WebView2 runtime is included.
-          releaseDraft: false
-          prerelease: false
-          args: '--target ${{ matrix.target }}'
+            > **macOS**: Open the DMG and drag Zenith to Applications. If Gatekeeper blocks it, right-click → Open.
+            > **Windows**: Run the `.msi` or `.exe` installer. WebView2 runtime is included.
