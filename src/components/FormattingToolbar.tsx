@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import type { Editor } from '@tiptap/core'
-import { Bold, Italic, Underline, Strikethrough, Code, Highlighter, Palette, Type, Minus, Plus, Volume2, VolumeX } from 'lucide-react'
+import { Bold, Italic, Underline, Strikethrough, Code, Highlighter, Palette, Type, Volume2, VolumeX } from 'lucide-react'
 import useStore from '../store/useStore'
 import { startReadingFrom, stopReading, isReading, getStopIndex } from '../lib/tts'
 
@@ -22,21 +22,44 @@ const FONT_FAMILIES = [
   { label: 'Zilla Slab', value: 'Zilla Slab', tag: 'Bold slab' },
 ]
 const COLORS = ['#b8a898', '#d4cfc4', '#f9f8f4', '#121212', '#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899', '#78716C']
-const SIZES = ['12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px']
+const SIZES = ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '36px', '48px', '60px', '72px']
 
 function FormattingToolbar({ editor }: Props) {
   const uiScale = useStore((s) => s.uiScale)
   const preferredVoice = useStore((s) => s.preferredVoice)
+  const editorFontSize = useStore((s) => s.editorFontSize)
   const [showColor, setShowColor] = useState(false)
   const [showFont, setShowFont] = useState(false)
+  const [showSizes, setShowSizes] = useState(false)
+  const [, setTick] = useState(0) // force re-render on selection change
   const [isPlaying, setIsPlaying] = useState(false)
   const cr = useRef<HTMLDivElement>(null)
   const fr = useRef<HTMLDivElement>(null)
+  const szRef = useRef<HTMLDivElement>(null)
+
+  // Pending font size: auto-reapplied as stored mark when cursor moves
+  const pendingSize = useRef<string | null>(null)
+
+  // Auto-reapply pending font size + re-render on selection change to show cursor size
+  useEffect(() => {
+    const handler = () => {
+      setTick(t => t + 1) // force re-render so as_ reflects current cursor size
+      if (!pendingSize.current) return
+      const { empty } = editor.state.selection
+      const currentFontSize = editor.getAttributes('textStyle').fontSize
+      if (empty && !currentFontSize) {
+        editor.commands.setMark('textStyle', { fontSize: pendingSize.current })
+      }
+    }
+    editor.on('selectionUpdate', handler)
+    return () => { editor.off('selectionUpdate', handler) }
+  }, [editor])
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
       if (cr.current && !cr.current.contains(e.target as Node)) setShowColor(false)
       if (fr.current && !fr.current.contains(e.target as Node)) setShowFont(false)
+      if (szRef.current && !szRef.current.contains(e.target as Node)) setShowSizes(false)
     }
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
@@ -46,67 +69,64 @@ function FormattingToolbar({ editor }: Props) {
   const af = editor.getAttributes('textStyle').fontFamily || null
   const as_ = editor.getAttributes('textStyle').fontSize || null
 
+  const handleSizeClick = useCallback((s: string) => {
+    const { empty } = editor.state.selection
+    if (empty) {
+      // No selection: save as pending and set stored mark
+      pendingSize.current = s
+      editor.chain().focus().setMark('textStyle', { fontSize: s }).run()
+    } else {
+      // Selection: apply inline mark
+      pendingSize.current = null
+      editor.chain().focus().setMark('textStyle', { fontSize: s }).run()
+    }
+    setShowSizes(false)
+  }, [editor])
+
+  // Display: inline size if cursor has one, else pending, else default
+  const displaySize = as_ || pendingSize.current || editorFontSize
+
   const handleReadAloud = useCallback(() => {
     if (isPlaying || isReading()) {
-      // Stop — keep the last-read sentence highlighted so user sees where they were
       stopReading()
       setIsPlaying(false)
       return
     }
-
     const { from, to, empty } = editor.state.selection
-
-    // If user has new text selected, read that. Otherwise read full doc.
-    const hasNewSelection = !empty
-
-    const text = hasNewSelection
-      ? editor.state.doc.textBetween(from, to, ' ')
-      : editor.state.doc.textContent
-
+    const text = empty
+      ? editor.state.doc.textContent
+      : editor.state.doc.textBetween(from, to, ' ')
     if (!text.trim()) return
-
     const sentences = text.match(/[^.!?\n]+[.!?\n]*/g)?.map(s => s.trim()).filter(s => s.length > 0) || [text]
-    const resumeIdx = hasNewSelection ? 0 : getStopIndex()
-
+    const resumeIdx = empty ? getStopIndex() : 0
     setIsPlaying(true)
-
     const highlightSentence = (idx: number) => {
       const sentenceText = sentences[idx]
       if (!sentenceText) return
       const fullText = editor.state.doc.textContent
-
       let pos = 0
       for (let i = 0; i < idx; i++) {
         const s = sentences[i]
         const found = fullText.indexOf(s, pos)
         if (found >= 0) pos = found + s.length
       }
-
       const start = fullText.indexOf(sentenceText, pos)
       if (start >= 0) {
         editor.commands.setTextSelection({ from: start + 1, to: start + 1 + sentenceText.length })
-        const { view } = editor
-        const coords = view.coordsAtPos(start + 1)
+        const coords = editor.view.coordsAtPos(start + 1)
         if (coords) {
-          const scrollContainer = view.dom.closest('.overflow-y-auto')
+          const scrollContainer = editor.view.dom.closest('.overflow-y-auto')
           if (scrollContainer) {
             scrollContainer.scrollTo({ top: scrollContainer.scrollTop + coords.top - scrollContainer.clientHeight / 3, behavior: 'smooth' })
           }
         }
       }
     }
-
-    startReadingFrom(
-      text,
-      resumeIdx,
-      (idx) => highlightSentence(idx),
-      () => {
-        setIsPlaying(false)
-        const end = editor.state.doc.content.size
-        editor.commands.setTextSelection({ from: end, to: end })
-      },
-      preferredVoice || undefined,
-    )
+    startReadingFrom(text, resumeIdx, highlightSentence, () => {
+      setIsPlaying(false)
+      const end = editor.state.doc.content.size
+      editor.commands.setTextSelection({ from: end, to: end })
+    }, preferredVoice || undefined)
   }, [editor, isPlaying, preferredVoice])
 
   const Btn = ({ on, click, icon, title }: { on?: boolean; click: () => void; icon: React.ReactNode; title: string }) => (
@@ -115,11 +135,8 @@ function FormattingToolbar({ editor }: Props) {
 
   return (
     <div className="fixed top-6 left-0 right-0 z-45 flex justify-center pointer-events-none">
-      {/* 40px invisible hover zone with CSS :hover to reveal toolbar */}
       <div className="group pointer-events-auto" style={{ zoom: uiScale }}>
-        {/* Invisible hit area — inverse-scale so it stays physically consistent */}
         <div style={{ height: `${32 / uiScale}px` }} />
-        {/* Actual toolbar — appears on hover via CSS group-hover */}
         <div className="flex items-center gap-0.5 px-3 py-1.5 rounded-lg bg-slate-900/95 backdrop-blur-md border border-slate-700/40 shadow-lg opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-auto">
           <div ref={fr} className="relative">
             <button onClick={() => setShowFont(!showFont)} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-sans text-white/60 hover:text-white hover:bg-white/10 transition-colors"><Type className="w-3 h-3" />{FONT_FAMILIES.find(f => f.value === af)?.label || 'Inter'}</button>
@@ -133,9 +150,29 @@ function FormattingToolbar({ editor }: Props) {
             )}
           </div>
           <span className="w-px h-3 bg-white/15" />
-          <Btn click={() => { const i = SIZES.indexOf(as_||'18px'); editor.chain().focus().setMark('textStyle',{fontSize:SIZES[i>0?i-1:0]}).run() }} icon={<Minus className="w-3 h-3"/>} title="Smaller" />
-          <span className="text-[11px] font-sans text-white/60 min-w-[28px] text-center select-none">{as_||'18px'}</span>
-          <Btn click={() => { const i = SIZES.indexOf(as_||'18px'); editor.chain().focus().setMark('textStyle',{fontSize:SIZES[i<SIZES.length-1?i+1:SIZES.length-1]}).run() }} icon={<Plus className="w-3 h-3"/>} title="Larger" />
+          <div ref={szRef} className="relative">
+            <button
+              onClick={() => setShowSizes(!showSizes)}
+              className="text-[11px] font-sans text-white/60 hover:text-white px-1 py-0.5 rounded hover:bg-white/10 transition-colors min-w-[32px] text-center"
+            >
+              {displaySize}
+            </button>
+            {showSizes && (
+              <div className="absolute top-full left-0 mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-1 z-50 w-[90px] max-h-[260px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {SIZES.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => handleSizeClick(s)}
+                    className={`w-full text-left px-2 py-1 rounded text-[11px] font-sans transition-colors ${
+                      displaySize === s ? 'text-white bg-white/15' : 'text-white/50 hover:text-white hover:bg-white/8'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <span className="w-px h-3 bg-white/15" />
           <Btn on={editor.isActive('bold')} click={() => editor.chain().focus().toggleBold().run()} icon={<Bold className="w-3 h-3"/>} title="Bold" />
           <Btn on={editor.isActive('italic')} click={() => editor.chain().focus().toggleItalic().run()} icon={<Italic className="w-3 h-3"/>} title="Italic" />

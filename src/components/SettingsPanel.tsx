@@ -41,7 +41,7 @@ function SettingsPanel() {
     }
   }, [isOpen])
 
-  const FONT_SIZES = ['14px', '15px', '16px', '17px', '18px', '19px', '20px', '22px', '24px']
+  const FONT_SIZES = ['12px', '14px', '16px', '18px', '20px', '22px', '24px', '28px', '36px']
 
   return (
     <AnimatePresence>

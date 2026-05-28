@@ -1,0 +1,7 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - heading "Unhandled Promise Rejection" [level=2] [ref=e4]
+    - generic [ref=e5]: "Cannot read properties of undefined (reading 'invoke') TypeError: Cannot read properties of undefined (reading 'invoke') at invoke (http://localhost:1420/node_modules/.vite/deps/core-DEaLTQ_T.js?v=e174858f:152:36) at exists (http://localhost:1420/node_modules/.vite/deps/@tauri-apps_plugin-fs.js?v=e174858f:771:15) at ensureDocsDir (http://localhost:1420/src/lib/fs.ts:4:26) at loadDocuments (http://localhost:1420/src/lib/fs.ts:26:8) at init (http://localhost:1420/src/App.tsx?t=1779855107029:34:21) at http://localhost:1420/src/App.tsx?t=1779855107029:45:3 at Object.react_stack_bottom_frame (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=e174858f:12903:13) at runWithFiberInDEV (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=e174858f:850:66) at commitHookEffectListMount (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=e174858f:6616:153) at commitHookPassiveMountEffects (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=e174858f:6651:55)"
+  - main [ref=e7]:
+    - generic [ref=e9]: ZENITH
+    - paragraph [ref=e14]
