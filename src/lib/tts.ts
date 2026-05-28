@@ -1,6 +1,5 @@
 type TTSCallback = (index: number) => void
 
-let currentUtterance: SpeechSynthesisUtterance | null = null
 let isActive = false
 let stopIndex = 0  // remembers sentence position when user stops
 
@@ -13,7 +12,9 @@ export function getStopIndex(): number {
 }
 
 export function getAvailableVoices(): { name: string; lang: string; local: boolean }[] {
-  return speechSynthesis.getVoices().map(v => ({
+  const voices = speechSynthesis.getVoices()
+  console.log(`TTS: ${voices.length} voices available:`, voices.map(v => `${v.name} (${v.lang}, local=${v.localService})`))
+  return voices.map(v => ({
     name: v.name,
     lang: v.lang,
     local: v.localService,
@@ -118,7 +119,6 @@ export function startReadingFrom(
       speakNext()
     }
 
-    currentUtterance = utterance
     speechSynthesis.speak(utterance)
   }
 
@@ -129,7 +129,6 @@ export function stopReading(): void {
   isActive = false
   // stopIndex retains its last value so caller can highlight the sentence
   speechSynthesis.cancel()
-  currentUtterance = null
 }
 
 // Preload voices — call on app init

@@ -26,8 +26,14 @@ function SettingsPanel() {
   useEffect(() => {
     if (isOpen) {
       const load = () => {
+        // Force a fresh call — speechSynthesis.getVoices() may return more after user interaction
         const v = getAvailableVoices()
         if (v.length > 0) setVoices(v)
+        // Fallback: try again after a short delay (voices may load async on Windows)
+        setTimeout(() => {
+          const v2 = getAvailableVoices()
+          if (v2.length > voices.length) setVoices(v2)
+        }, 500)
       }
       load()
       speechSynthesis.addEventListener('voiceschanged', load)
@@ -127,6 +133,16 @@ function SettingsPanel() {
                 <div className="flex items-center gap-2 mb-3">
                   <Volume2 className="w-4 h-4 text-ink/40 dark:text-bone/40" />
                   <span className="font-sans text-xs font-medium text-ink/60 dark:text-bone/60 uppercase tracking-wider">Read Aloud Voice</span>
+                  <button
+                    onClick={() => {
+                      const v = getAvailableVoices()
+                      if (v.length > 0) setVoices(v)
+                    }}
+                    className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-ink/40 dark:text-bone/40 hover:text-ink dark:hover:text-bone hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-sans"
+                    title="Refresh voice list"
+                  >
+                    Refresh ({voices.length} voices)
+                  </button>
                 </div>
                 <select
                   value={preferredVoice}
