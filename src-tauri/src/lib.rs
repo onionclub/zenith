@@ -24,6 +24,7 @@ fn save_image(app_handle: tauri::AppHandle, file_name: String, data: Vec<u8>) ->
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
+    .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_fs::init())
     .plugin(tauri_plugin_window_state::Builder::default().build())

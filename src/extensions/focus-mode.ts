@@ -12,7 +12,9 @@ const FocusMode = Extension.create({
         key: focusModePluginKey,
         view: () => ({
           update: (view) => {
-            const { selection } = view.state
+            try {
+              if (!view || !view.state) return
+              const { selection } = view.state
             const { $head } = selection
             const prosemirror = view.dom
 
@@ -30,6 +32,9 @@ const FocusMode = Extension.create({
             // Add .has-focus to the block containing the cursor
             if (blockEl) {
               blockEl.classList.add('has-focus')
+            }
+            } catch (e) {
+              // Plugin should never crash the editor
             }
           },
         }),

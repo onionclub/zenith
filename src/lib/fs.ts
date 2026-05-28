@@ -3,6 +3,7 @@ import {
   readDir,
   readTextFile,
   writeTextFile,
+  remove,
   exists,
   mkdir,
 } from '@tauri-apps/plugin-fs'
@@ -57,6 +58,8 @@ export async function loadDocuments(): Promise<Document[]> {
         title,
         path: `${DOCS_DIR}/${entry.name}`,
         updatedAt: Date.now(),
+        group: (json as any).group || '',
+        tags: (json as any).tags || [],
       })
     } catch {
       // Skip malformed files
@@ -65,6 +68,10 @@ export async function loadDocuments(): Promise<Document[]> {
 
   docs.sort((a, b) => b.updatedAt - a.updatedAt)
   return docs
+}
+
+export async function deleteDocument(path: string): Promise<void> {
+  await remove(path, { baseDir: BaseDirectory.AppData })
 }
 
 export async function saveDocument(path: string, json: Record<string, unknown>): Promise<void> {
@@ -100,5 +107,7 @@ export async function createDocument(): Promise<Document> {
     title: 'Untitled',
     path: filePath,
     updatedAt: timestamp,
+    group: '',
+    tags: [],
   }
 }

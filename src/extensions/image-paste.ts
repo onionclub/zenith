@@ -1,4 +1,5 @@
 import { Extension } from '@tiptap/core'
+import { Plugin } from '@tiptap/pm/state'
 import { invoke } from '@tauri-apps/api/core'
 import { convertFileSrc } from '@tauri-apps/api/core'
 
@@ -7,11 +8,11 @@ const ImagePaste = Extension.create({
 
   addProseMirrorPlugins() {
     return [
-      new (this.editor.constructor as any).pm.state.Plugin({
+      new Plugin({
         props: {
-          handlePaste: (view: any, event: ClipboardEvent) => {
+          handlePaste: (view, event) => {
             const items = Array.from(event.clipboardData?.items || [])
-            const imageItem = items.find((item) => item.type.startsWith('image/'))
+            const imageItem = items.find((item: DataTransferItem) => item.type.startsWith('image/'))
 
             if (!imageItem) return false
 

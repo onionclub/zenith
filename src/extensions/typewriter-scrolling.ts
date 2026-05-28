@@ -22,7 +22,9 @@ const TypewriterScrolling = Extension.create({
         key: typewriterPluginKey,
         view: () => ({
           update: (view) => {
-            const editorEl = view.dom.closest('.tiptap')
+            try {
+              if (!view || !view.state) return
+              const editorEl = view.dom.closest('.tiptap')
             if (!editorEl || !editorEl.classList.contains('is-typewriter-mode')) return
 
             const { selection } = view.state
@@ -47,6 +49,9 @@ const TypewriterScrolling = Extension.create({
                 top: Math.max(0, targetScroll),
                 behavior: 'smooth',
               })
+            }
+            } catch (e) {
+              // Plugin should never crash the editor
             }
           },
         }),

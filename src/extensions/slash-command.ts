@@ -189,7 +189,11 @@ const SlashCommand = Extension.create({
         editor: this.editor,
         char: '/',
         command: ({ editor, range, props }: any) => {
-          props.command({ editor, range })
+          try {
+            props.command({ editor, range })
+          } catch (e) {
+            console.error('Slash command failed:', e)
+          }
         },
         items: ({ query }: { query: string }) => {
           const filtered = commands.filter((item) =>

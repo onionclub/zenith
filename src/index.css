@@ -2,9 +2,9 @@
 
 @theme {
   --color-paper: #F9F8F4;
-  --color-ink: #2C2C2C;
+  --color-ink: #B8A898;
   --color-slate-dark: #121212;
-  --color-bone: #E0E0E0;
+  --color-bone: #D4CFC4;
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-serif: 'Newsreader', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -16,20 +16,23 @@
   outline: none;
 }
 
-.tiptap .ProseMirror {
+.tiptap.ProseMirror {
   min-height: 100%;
   outline: none;
   font-family: var(--font-serif);
-  color: var(--color-ink);
+  color: #b8a898 !important;
   font-size: 1.125rem;
   line-height: 1.75;
 }
 
 /* Dark mode text color */
 @media (prefers-color-scheme: dark) {
-  .tiptap .ProseMirror {
-    color: var(--color-bone);
+  .tiptap.ProseMirror {
+    color: #d4cfc4 !important;
   }
+}
+html.dark .tiptap.ProseMirror {
+  color: #d4cfc4 !important;
 }
 
 /* Typography Elements */
@@ -50,7 +53,7 @@
 .tiptap h3 { font-size: 1.375rem; }
 
 .tiptap blockquote {
-  border-left: 3px solid var(--color-ink);
+  border-left: 3px solid #b8a898;
   padding-left: 1.25rem;
   margin-left: 0;
   margin-bottom: 1.25rem;
@@ -60,8 +63,11 @@
 
 @media (prefers-color-scheme: dark) {
   .tiptap blockquote {
-    border-left-color: var(--color-bone);
+    border-left-color: #d4cfc4;
   }
+}
+html.dark .tiptap blockquote {
+  border-left-color: #d4cfc4;
 }
 
 .tiptap code {
@@ -76,6 +82,9 @@
   .tiptap code {
     background-color: rgba(255, 255, 255, 0.1);
   }
+}
+html.dark .tiptap code {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .tiptap pre {
@@ -113,26 +122,33 @@
 }
 
 .tiptap ul[data-type="taskList"] li label input[type="checkbox"] {
-  accent-color: var(--color-ink);
+  accent-color: #b8a898;
   cursor: pointer;
   width: 16px;
   height: 16px;
 }
 
+html.dark .tiptap ul[data-type="taskList"] li label input[type="checkbox"] {
+  accent-color: #d4cfc4;
+}
+
 /* Placeholder */
-.tiptap .ProseMirror p.is-editor-empty:first-child::before {
+.tiptap.ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: var(--color-ink);
+  color: #b8a898;
   opacity: 0.3;
   pointer-events: none;
   height: 0;
 }
 
 @media (prefers-color-scheme: dark) {
-  .tiptap .ProseMirror p.is-editor-empty:first-child::before {
-    color: var(--color-bone);
+  .tiptap.ProseMirror p.is-editor-empty:first-child::before {
+    color: #d4cfc4;
   }
+}
+html.dark .tiptap.ProseMirror p.is-editor-empty:first-child::before {
+  color: #d4cfc4;
 }
 
 /* Tippy Overrides */
@@ -170,14 +186,14 @@
 
 .tiptap table:hover td,
 .tiptap table:hover th {
-  border-color: var(--color-ink);
+  border-color: #b8a898;
   opacity: 0.3;
 }
 
 .tiptap table td:focus,
 .tiptap table th:focus,
 .tiptap table .selectedCell {
-  border-color: var(--color-ink) !important;
+  border-color: #b8a898 !important;
   opacity: 1 !important;
   background-color: rgba(0,0,0,0.02);
 }
@@ -198,8 +214,23 @@
 }
 
 .tiptap img.ProseMirror-selectednode {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid #b8a898;
   outline-offset: 2px;
+}
+
+html.dark .tiptap img.ProseMirror-selectednode {
+  outline-color: #d4cfc4;
+}
+
+html.dark .tiptap table:hover td,
+html.dark .tiptap table:hover th {
+  border-color: #d4cfc4;
+}
+
+html.dark .tiptap table td:focus,
+html.dark .tiptap table th:focus,
+html.dark .tiptap table .selectedCell {
+  border-color: #d4cfc4 !important;
 }
 
 /* Focus Mode Styling */
@@ -228,7 +259,7 @@
 @media print {
   body > *:not(#root) { display: none !important; }
   #root > *:not(.print-area) { display: none !important; }
-  .tiptap .ProseMirror {
+  .tiptap.ProseMirror {
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -236,7 +267,7 @@
     line-height: 1.5 !important;
     color: #000 !important;
   }
-  .tiptap .ProseMirror .has-focus { opacity: 1 !important; }
+  .tiptap.ProseMirror .has-focus { opacity: 1 !important; }
   .tiptap img { max-width: 100% !important; page-break-inside: avoid; }
   .tiptap table { page-break-inside: avoid; border: 1px solid #ccc !important; }
   .tiptap table td, .tiptap table th { border: 1px solid #ccc !important; }

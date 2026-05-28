@@ -7,6 +7,10 @@ import Highlight from '@tiptap/extension-highlight'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import CharacterCount from '@tiptap/extension-character-count'
+import { Color } from '@tiptap/extension-color'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { FontFamily } from '@tiptap/extension-font-family'
+import { Underline } from '@tiptap/extension-underline'
 import { Table } from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
@@ -14,8 +18,6 @@ import TableHeader from '@tiptap/extension-table-header'
 import Image from '@tiptap/extension-image'
 import SlashCommand from '../extensions/slash-command'
 import ImagePaste from '../extensions/image-paste'
-import FocusMode from '../extensions/focus-mode'
-import TypewriterScrolling from '../extensions/typewriter-scrolling'
 import BubbleMenuToolbar from './BubbleMenuToolbar'
 import StatusBar from './StatusBar'
 import { readTextFile } from '@tauri-apps/plugin-fs'
@@ -25,10 +27,9 @@ import { saveDocument } from '../lib/fs'
 
 function Editor() {
   const activeDocPath = useStore((s) => s.activeDocPath)
-  const isFocusMode = useStore((s) => s.isFocusMode)
-  const isTypewriterMode = useStore((s) => s.isTypewriterMode)
   const setSaveStatus = useStore((s) => s.setSaveStatus)
   const setEditorInstance = useStore((s) => s.setEditorInstance)
+  const editorFontSize = useStore((s) => s.editorFontSize)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isLoadingRef = useRef(false)
 
@@ -54,24 +55,19 @@ function Editor() {
         allowBase64: false,
         inline: false,
       }),
+      TextStyle,
+      Color,
+      FontFamily,
+      Underline,
       CharacterCount,
       SlashCommand,
       ImagePaste,
-      FocusMode,
-      TypewriterScrolling,
     ],
     editorProps: {
       attributes: {
-        class: [
-          'tiptap',
-          isFocusMode && 'is-focus-mode',
-          isTypewriterMode && 'is-typewriter-mode',
-        ]
-          .filter(Boolean)
-          .join(' '),
+        class: 'tiptap focus:outline-none',
       },
     },
-    immediatelyRender: false,
   })
 
   // Load document content when activeDocPath changes
@@ -126,19 +122,14 @@ function Editor() {
     }
   }, [editor, handleUpdate])
 
-  // Store editor instance for global access (export, save shortcuts)
+  // Store editor instance and apply font size
   useEffect(() => {
     setEditorInstance(editor)
+    if (editor) {
+      editor.view.dom.style.fontSize = editorFontSize
+    }
     return () => setEditorInstance(null)
-  }, [editor, setEditorInstance])
-
-  // Update editor element classes when modes toggle
-  useEffect(() => {
-    if (!editor) return
-    const el = editor.view.dom
-    el.classList.toggle('is-focus-mode', isFocusMode)
-    el.classList.toggle('is-typewriter-mode', isTypewriterMode)
-  }, [editor, isFocusMode, isTypewriterMode])
+  }, [editor, setEditorInstance, editorFontSize])
 
   // Cleanup save timer on unmount
   useEffect(() => {

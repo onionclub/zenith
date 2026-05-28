@@ -9,6 +9,7 @@ import { exportToMarkdown, exportToPDF } from '../lib/export'
 function CommandPalette() {
   const documents = useStore((s) => s.documents)
   const isPaletteOpen = useStore((s) => s.isPaletteOpen)
+  const uiScale = useStore((s) => s.uiScale)
   const isFocusMode = useStore((s) => s.isFocusMode)
   const isTypewriterMode = useStore((s) => s.isTypewriterMode)
   const setActiveDoc = useStore((s) => s.setActiveDoc)
@@ -65,6 +66,7 @@ function CommandPalette() {
             transition={{ duration: 0.15, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
             className="w-[500px] max-w-[90vw]"
+            style={{ zoom: uiScale }}
           >
             <Command className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl">
               <Command.Input

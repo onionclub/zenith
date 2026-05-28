@@ -1,11 +1,11 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Zenith",
-  "version": "1.0.6",
-  "identifier": "com.zenith.app",
+  "version": "1.0.7",
+  "identifier": "com.zenith.desktop",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://127.0.0.1:15173",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' asset:; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; script-src 'self'",
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: data: blob:; font-src 'self'; media-src 'self'",
       "assetProtocol": {
         "enable": true,
         "scope": ["**"]
@@ -40,6 +40,7 @@
       "icons/icon.ico"
     ],
     "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" },
       "nsis": {
         "installMode": "currentUser",
         "displayLanguageSelector": true

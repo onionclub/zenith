@@ -1,6 +1,9 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import Editor from './components/Editor'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import FormattingToolbar from './components/FormattingToolbar'
+import SettingsPanel from './components/SettingsPanel'
+import Companion from './components/Companion'
 import Sidebar from './components/Sidebar'
 import CommandPalette from './components/CommandPalette'
 import useStore from './store/useStore'
@@ -16,24 +19,52 @@ function App() {
   const togglePalette = useStore((s) => s.togglePalette)
   const toggleFocusMode = useStore((s) => s.toggleFocusMode)
   const toggleTypewriterMode = useStore((s) => s.toggleTypewriterMode)
+  const toggleSettings = useStore((s) => s.toggleSettings)
   const setSidebarOpen = useStore((s) => s.setSidebarOpen)
   const setPaletteOpen = useStore((s) => s.setPaletteOpen)
+  const setSettingsOpen = useStore((s) => s.setSettingsOpen)
   const setSaveStatus = useStore((s) => s.setSaveStatus)
   const saveStatus = useStore((s) => s.saveStatus)
+  const editorInstance = useStore((s) => s.editorInstance)
+  const pageWidth = useStore((s) => s.pageWidth)
+  const setPageWidth = useStore((s) => s.setPageWidth)
+  const uiScale = useStore((s) => s.uiScale)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [dragEdge, setDragEdge] = useState<'left'|'right'|null>(null)
+
+  // Re-clamp page width when window resizes (prevents handles from going off-screen)
+  useEffect(() => {
+    const onResize = () => {
+      const maxW = Math.min(window.innerWidth - 60, window.innerWidth * 0.92)
+      if (pageWidth > maxW) setPageWidth(maxW)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [pageWidth, setPageWidth])
+
+  // Runtime debugging
+  useEffect(() => {
+    console.log('Zenith: App mounted, store state:', useStore.getState())
+  }, [])
 
   // Initialize: load documents on mount
   useEffect(() => {
     const init = async () => {
-      let docs = await loadDocuments()
-      if (docs.length === 0) {
-        const doc = await createDocument()
-        docs = [doc]
-        addDocument(doc)
-      }
-      setDocuments(docs)
-      if (!activeDocPath) {
-        setActiveDoc(docs[0].path)
+      try {
+        let docs = await loadDocuments()
+        const hasInitialized = localStorage.getItem('zenith_initialized')
+        if (docs.length === 0 && !hasInitialized) {
+          const doc = await createDocument()
+          docs = [doc]
+          addDocument(doc)
+          localStorage.setItem('zenith_initialized', '1')
+        }
+        setDocuments(docs)
+        if (!activeDocPath) {
+          setActiveDoc(docs[0].path)
+        }
+      } catch (e) {
+        console.error('Zenith init failed:', e)
       }
     }
     init()
@@ -61,9 +92,12 @@ function App() {
     await exportToMarkdown(editor.getHTML())
   }, [])
 
-  // Disable default right-click context menu
+  // Disable right-click only on editor area (not sidebar)
   useEffect(() => {
-    const handler = (e: MouseEvent) => e.preventDefault()
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest('.tiptap')) e.preventDefault()
+    }
     document.addEventListener('contextmenu', handler)
     return () => document.removeEventListener('contextmenu', handler)
   }, [])
@@ -87,18 +121,25 @@ function App() {
       } else if (mod && e.key === 'e') {
         e.preventDefault()
         handleExportMarkdown()
+      } else if (mod && e.key === ',') {
+        e.preventDefault()
+        toggleSettings()
       } else if (mod && e.shiftKey && e.key === 'F') {
         e.preventDefault()
         toggleFocusMode()
       } else if (mod && e.shiftKey && e.key === 'T') {
         e.preventDefault()
         toggleTypewriterMode()
+      } else if (mod && e.key === '0') {
+        e.preventDefault()
+        useStore.getState().setUiScale(1)
       } else if (e.key === 'Escape') {
         setSidebarOpen(false)
         setPaletteOpen(false)
+        setSettingsOpen(false)
       }
     },
-    [toggleSidebar, togglePalette, toggleFocusMode, toggleTypewriterMode, setSidebarOpen, setPaletteOpen, immediateSave, handleExportMarkdown],
+    [toggleSidebar, togglePalette, toggleFocusMode, toggleTypewriterMode, toggleSettings, setSidebarOpen, setPaletteOpen, setSettingsOpen, immediateSave, handleExportMarkdown],
   )
 
   useEffect(() => {
@@ -113,6 +154,33 @@ function App() {
     }
   }, [])
 
+  // Page width drag handles
+  const dragState = useRef({ edge: null as 'left'|'right'|null, startX: 0, startW: pageWidth })
+  const pageWidthRef = useRef(pageWidth)
+  pageWidthRef.current = pageWidth
+
+  const onPageEdgeDown = useCallback((edge: 'left'|'right', e: React.PointerEvent) => {
+    e.preventDefault()
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    dragState.current = { edge, startX: e.clientX, startW: pageWidthRef.current }
+    setDragEdge(edge)
+  }, [])
+
+  const onPageEdgeMove = useCallback((e: React.PointerEvent) => {
+    const d = dragState.current
+    if (!d.edge) return
+    const dx = e.clientX - d.startX
+    const delta = d.edge === 'right' ? dx : -dx
+    const maxW = Math.min(window.innerWidth - 60, window.innerWidth * 0.92)
+    const newW = Math.max(300, Math.min(maxW, d.startW + delta * 2))
+    setPageWidth(newW)
+  }, [setPageWidth])
+
+  const onPageEdgeUp = useCallback(() => {
+    dragState.current.edge = null
+    setDragEdge(null)
+  }, [])
+
   const statusText =
     saveStatus === 'saving'
       ? 'Saving...'
@@ -120,12 +188,12 @@ function App() {
         ? 'Saved'
         : ''
 
+  const pageStyle = { maxWidth: pageWidth }
+
   return (
     <main className="min-h-screen bg-paper dark:bg-slate-dark transition-colors duration-300 flex flex-col">
-      <div
-        data-tauri-drag-region
-        className="h-8 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-50"
-      >
+      {/* Titlebar — full-width drag region */}
+      <div data-tauri-drag-region className="flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-50" style={{ height: 32 }}>
         <span className="font-sans text-xs text-ink/40 dark:text-bone/40 font-medium tracking-wider select-none">
           ZENITH
         </span>
@@ -136,12 +204,48 @@ function App() {
 
       <Sidebar />
       <CommandPalette />
+      <SettingsPanel />
+      <Companion />
 
-      <div className="pt-20 pb-12 px-6 flex-1 overflow-y-auto">
-        <div className="max-w-[680px] mx-auto pb-32 print-area">
-          <ErrorBoundary>
-            <Editor />
-          </ErrorBoundary>
+      {editorInstance && (
+        <div className="fixed top-8 left-0 right-0 z-40 flex justify-center">
+          <div className="w-full" style={pageStyle}>
+            <FormattingToolbar editor={editorInstance} />
+          </div>
+        </div>
+      )}
+
+      <div className="pb-12 px-6 flex-1 overflow-y-auto" style={{ paddingTop: `${76 + 32 * uiScale}px` }}>
+        <div className="mx-auto pb-32 print-area relative" style={pageStyle}>
+          {/* Left drag handle — wide clickable area, thin visual bar */}
+          <div
+            className="absolute top-0 bottom-0 z-30 w-3 -left-3"
+            style={{ cursor: 'ew-resize' }}
+            onPointerDown={(e) => onPageEdgeDown('left', e)}
+            onPointerMove={onPageEdgeMove}
+            onPointerUp={onPageEdgeUp}
+          >
+            <div className={`absolute top-0 bottom-0 right-0 transition-all duration-150 ${
+              dragEdge === 'left' ? 'w-1 bg-ink/10 dark:bg-bone/10' : 'w-0.5 bg-ink/4 dark:bg-bone/4 group-hover:bg-ink/7 dark:group-hover:bg-bone/7'
+            }`} />
+          </div>
+          {/* Right drag handle — wide clickable area, thin visual bar */}
+          <div
+            className="absolute top-0 bottom-0 z-30 w-3 -right-3"
+            style={{ cursor: 'ew-resize' }}
+            onPointerDown={(e) => onPageEdgeDown('right', e)}
+            onPointerMove={onPageEdgeMove}
+            onPointerUp={onPageEdgeUp}
+          >
+            <div className={`absolute top-0 bottom-0 left-0 transition-all duration-150 ${
+              dragEdge === 'right' ? 'w-1 bg-ink/10 dark:bg-bone/10' : 'w-0.5 bg-ink/4 dark:bg-bone/4 group-hover:bg-ink/7 dark:group-hover:bg-bone/7'
+            }`} />
+          </div>
+          <div className="px-12">
+            <ErrorBoundary>
+              <Editor />
+            </ErrorBoundary>
+          </div>
         </div>
       </div>
     </main>

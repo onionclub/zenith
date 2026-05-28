@@ -102,7 +102,9 @@ function BubbleMenuToolbar({ editor }: BubbleMenuToolbarProps) {
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const toolbarRef = useRef<HTMLDivElement>(null)
 
-  const isInTable = editor.isActive('table')
+  const isInTable = (() => {
+    try { return editor.isActive('table') } catch { return false }
+  })()
 
   const updatePosition = useCallback(() => {
     const { from, to, empty } = editor.state.selection
@@ -160,7 +162,7 @@ function BubbleMenuToolbar({ editor }: BubbleMenuToolbarProps) {
                 type="button"
                 onMouseDown={(e) => {
                   e.preventDefault()
-                  action(editor)
+                  try { action(editor) } catch (err) { console.error('BubbleMenu action failed:', err) }
                 }}
                 className={`p-1.5 rounded-md transition-colors duration-75 ${
                   isActive
