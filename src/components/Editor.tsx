@@ -8,7 +8,7 @@ import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import CharacterCount from '@tiptap/extension-character-count'
 import { Color } from '@tiptap/extension-color'
-import { TextStyle } from '@tiptap/extension-text-style'
+import { TextStyle, FontSize } from '@tiptap/extension-text-style'
 import { FontFamily } from '@tiptap/extension-font-family'
 import { Underline } from '@tiptap/extension-underline'
 import { Table } from '@tiptap/extension-table'
@@ -56,6 +56,7 @@ function Editor() {
         inline: false,
       }),
       TextStyle,
+      FontSize,
       Color,
       FontFamily,
       Underline,
