@@ -122,14 +122,18 @@ function Editor() {
     }
   }, [editor, handleUpdate])
 
-  // Store editor instance and apply font size
+  // Store editor instance once
   useEffect(() => {
     setEditorInstance(editor)
+    return () => setEditorInstance(null)
+  }, [editor, setEditorInstance])
+
+  // Apply font size whenever it changes (separate from instance registration)
+  useEffect(() => {
     if (editor) {
       editor.view.dom.style.fontSize = editorFontSize
     }
-    return () => setEditorInstance(null)
-  }, [editor, setEditorInstance, editorFontSize])
+  }, [editor, editorFontSize])
 
   // Cleanup save timer on unmount
   useEffect(() => {
