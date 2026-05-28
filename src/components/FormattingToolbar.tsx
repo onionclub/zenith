@@ -44,7 +44,6 @@ function FormattingToolbar({ editor }: Props) {
 
   const ac = editor.getAttributes('textStyle').color || null
   const af = editor.getAttributes('textStyle').fontFamily || null
-  const as_ = editor.getAttributes('textStyle').fontSize || null
 
   const handleReadAloud = useCallback(() => {
     if (isPlaying || isReading()) {
@@ -133,9 +132,9 @@ function FormattingToolbar({ editor }: Props) {
             )}
           </div>
           <span className="w-px h-3 bg-white/15" />
-          <Btn click={() => { const i = SIZES.indexOf(as_||'18px'); editor.chain().focus().setMark('textStyle',{fontSize:SIZES[i>0?i-1:0]}).run() }} icon={<Minus className="w-3 h-3"/>} title="Smaller" />
-          <span className="text-[11px] font-sans text-white/60 min-w-[28px] text-center select-none">{as_||'18px'}</span>
-          <Btn click={() => { const i = SIZES.indexOf(as_||'18px'); editor.chain().focus().setMark('textStyle',{fontSize:SIZES[i<SIZES.length-1?i+1:SIZES.length-1]}).run() }} icon={<Plus className="w-3 h-3"/>} title="Larger" />
+          <Btn click={() => { const i = SIZES.indexOf(useStore.getState().editorFontSize); useStore.getState().setEditorFontSize(SIZES[i>0?i-1:0]) }} icon={<Minus className="w-3 h-3"/>} title="Smaller" />
+          <span className="text-[11px] font-sans text-white/60 min-w-[28px] text-center select-none">{useStore((s) => s.editorFontSize)}</span>
+          <Btn click={() => { const i = SIZES.indexOf(useStore.getState().editorFontSize); useStore.getState().setEditorFontSize(SIZES[i<SIZES.length-1?i+1:SIZES.length-1]) }} icon={<Plus className="w-3 h-3"/>} title="Larger" />
           <span className="w-px h-3 bg-white/15" />
           <Btn on={editor.isActive('bold')} click={() => editor.chain().focus().toggleBold().run()} icon={<Bold className="w-3 h-3"/>} title="Bold" />
           <Btn on={editor.isActive('italic')} click={() => editor.chain().focus().toggleItalic().run()} icon={<Italic className="w-3 h-3"/>} title="Italic" />

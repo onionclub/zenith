@@ -21,7 +21,7 @@
   outline: none;
   font-family: var(--font-serif);
   color: #b8a898 !important;
-  font-size: 1.125rem;
+  font-size: var(--editor-font-size, 1.125rem);
   line-height: 1.75;
 }
 

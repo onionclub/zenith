@@ -128,12 +128,10 @@ function Editor() {
     return () => setEditorInstance(null)
   }, [editor, setEditorInstance])
 
-  // Apply font size whenever it changes (separate from instance registration)
+  // Apply font size via CSS custom property on :root — immune to DOM resets
   useEffect(() => {
-    if (editor) {
-      editor.view.dom.style.fontSize = editorFontSize
-    }
-  }, [editor, editorFontSize])
+    document.documentElement.style.setProperty('--editor-font-size', editorFontSize)
+  }, [editorFontSize])
 
   // Cleanup save timer on unmount
   useEffect(() => {
