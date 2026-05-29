@@ -1,113 +1,124 @@
-# Zenith
+<div align="center">
 
-A premium, minimalist, iA Writer-style text editor. Built with Tauri v2, React 19, TipTap v3, and Tailwind v4.
+# ZENITH
 
-## Features
+**Write in the void.**
 
-- **Chromeless Writing** — No distractions. 680px centered reading column.
-- **Rich Editing** — Headings, blockquotes, code blocks, tables, task lists, images.
-- **Slash Commands** — Type `/` for a floating command menu.
-- **Bubble Menu** — Select text for instant formatting (bold, italic, highlight, etc.).
-- **Focus Mode** — Dim everything except the current block.
-- **Typewriter Scrolling** — Cursor stays vertically centered as you type.
-- **Local-First** — All documents saved as JSON in `app_data_dir/documents/`. Images in `app_data_dir/.zenith_assets/`.
-- **Auto-Save** — 800ms debounced save. Status indicator in the titlebar.
-- **Command Palette** — `Cmd/Ctrl + K` to search docs, create new, toggle modes, export.
-- **Export** — Markdown (via Turndown) and PDF (via print CSS).
-- **Window State** — Remembers size and position across sessions.
+</div>
 
-## Quick Start
+<img src="docs/hero.png" alt="ZENITH" width="100%">
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (LTS or latest)
-- [Rust](https://rustup.rs/) (stable)
+<div align="center">
 
-### Development
+*A text editor with nothing to prove and nothing to sell you.*
+<br>
+*It opens. You write. It remembers. That is the entire relationship.*
+
+</div>
+
+---
+
+## What this is
+
+A local-first writing surface for people who find every other editor too loud.
+
+No accounts. No cloud. No telemetry. No one is watching you write, because no one was ever going to. Your words live on your disk in plain files. Close the internet and nothing changes.
+
+It does less than the alternatives. That is the point. What remains is the page, your attention, and one quiet thing in the corner.
+
+## What it does
+
+- **A blank column and nothing else.** The chrome stays hidden until you ask for it.
+- **A toolbar of the few things you actually use.** Bold. Italic. The handful that matter. The rest was noise, and noise was removed.
+- **Commands, not menus.** Type `/` for tables, lists, images, code. The necessary ones. No more.
+- **Focus Mode.** The room dims. You do not.
+- **Typewriter scrolling.** The line you are writing stays where your eyes already rest.
+- **Hear it back.** Built-in text-to-speech reads your work aloud, so you catch what the eye forgives.
+- **Scale to taste.** The interface moves from 20% to 500% and never breaks.
+- **Quiet organization.** Folders, tags, a sidebar that appears when summoned and leaves when finished.
+- **One key for everything.** `Ctrl/Cmd + K` opens the command palette. Search, create, export, switch modes.
+- **It saves itself.** You will not be asked. You will not be thanked.
+- **Export when you must.** Markdown. PDF. Then back to the page.
+
+<img src="docs/room.png" alt="" width="100%">
+
+## The companion
+
+There is a creature in the corner.
+
+It does nothing. That is the most expensive thing it could do.
+
+It breathes. It rarely moves. When you have written for a long time without stopping, it stretches, once. Late at night, it sleeps. You can pick it up and put it anywhere on the screen, and it will stay exactly where you left it, indefinitely, without comment.
+
+It will never suggest, interrupt, or ask. It keeps you company while you work, the way good company does. Quietly, and without needing to be noticed.
+
+## Install
+
+Download the latest build from [**Releases**](https://github.com/onionclub/zenith/releases).
+
+- **Windows** — run the `.exe`.
+- **macOS** — open the `.dmg`, drag Zenith to Applications. The build is unsigned, so on first launch macOS will object. Clear it once:
+
+  ```bash
+  xattr -cr /Applications/Zenith.app
+  ```
+
+That is the only thing it will ever ask of you.
+
+## Build from source
+
+You will need [Node.js](https://nodejs.org), the [Rust toolchain](https://rustup.rs), and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your platform.
+
 ```bash
+git clone https://github.com/onionclub/zenith.git
+cd zenith
 npm install
-npm run tauri dev
+npm run tauri dev      # run locally
+npm run tauri build    # produce a release binary
 ```
 
-### Keyboard Shortcuts
+### Notes for anyone working on it
 
-| Shortcut | Action |
-|----------|--------|
-| `Cmd/Ctrl + K` | Command Palette |
-| `Cmd/Ctrl + B` | Toggle Sidebar |
-| `Cmd/Ctrl + S` | Force Save |
-| `Cmd/Ctrl + P` | Export to PDF / Print |
-| `Cmd/Ctrl + E` | Export to Markdown |
-| `Cmd/Ctrl + Shift + F` | Toggle Focus Mode |
-| `Cmd/Ctrl + Shift + T` | Toggle Typewriter Mode |
-| `Escape` | Close Sidebar & Palette |
-| `/` in editor | Slash Command Menu |
-| `Ctrl + V` (image) | Paste image from clipboard |
+A few constraints, learned the expensive way. Respect them and the build stays quiet.
 
----
+- Vite must use a **relative base** (`base: './'`). Absolute paths break Tauri's local file protocol and you get a white screen.
+- The CSP `style-src` must include `'unsafe-inline'`. The animation and styling layers inject inline styles.
+- File-system scopes live in `src-tauri/capabilities/default.json`, not `tauri.conf.json`.
+- The asset protocol is configured via `tauri.conf.json` -> `security.assetProtocol`.
+- `.cargo/config.toml` is git-ignored on purpose. It carries an absolute target path whose colon breaks macOS linking.
+- CI release jobs require `permissions: contents: write` at the job level.
+- macOS builds run on the `macos-14` runner (ARM64). `macos-latest` is Intel.
 
-## Local Windows Build (GNU Toolchain)
+## Stack
 
-Run:
-```bash
-npm run build:win
-```
+| Layer | Choice |
+|-------|--------|
+| Shell | Tauri v2 (Rust) |
+| Frontend | React 19 · TypeScript · Vite |
+| Editor | TipTap (ProseMirror) |
+| Styling | Tailwind CSS v4 |
+| Motion | Framer Motion |
+| State | Zustand |
+| Storage | Local plain files. Yours. |
 
-This compiles a standalone `.exe` and `.msi` installer using your local Rust toolchain.
+A finished build is roughly 4 MB. The alternatives ship a browser. We did not.
 
-**Note:** This machine uses the MinGW/GNU toolchain. The compiled binaries are fully offline, no-server executables. Output will be in:
-- `src-tauri/target/release/bundle/nsis/` — `.exe` installer
-- `src-tauri/target/release/bundle/msi/` — `.msi` installer
+## What it costs
 
----
+Free, or paid once, because you wanted to. There is no subscription. Nothing is held behind a wall. The companions are the only thing you can pay extra for, and they are decorative. They change nothing about the work.
 
-## Cloud Build (Windows MSVC + macOS ARM64)
-
-For the perfectly optimized Windows MSVC build and the macOS ARM (Apple Silicon) build, push to GitHub:
-
-```bash
-git init
-git add .
-git commit -m "Initial commit: Zenith v1.0"
-git branch -M main
-git remote add origin <YOUR_GITHUB_REPO_URL>
-git push -u origin main
-```
-
-Then tag and push the tag to trigger the release workflow:
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-After ~15 minutes, go to the **Releases** tab on GitHub to download:
-- **`Zenith_1.0.0_x64-setup.exe`** / **`Zenith_1.0.0_x64_en-US.msi`** (Windows x64, MSVC-optimized)
-- **`Zenith_1.0.0_aarch64.dmg`** (macOS ARM64 / Apple Silicon)
-
-The workflow can also be triggered manually from the **Actions** tab via `workflow_dispatch`.
-
----
-
-## macOS Security Bypass
-
-**Important:** Because the Mac app is not signed with an Apple Developer Certificate ($99/year), macOS will show a **"Zenith cannot be verified"** warning on first launch.
-
-### Fix
-1. Open **Finder** → **Applications**.
-2. **Right-Click** (or **Control-Click**) the Zenith app.
-3. Select **Open** from the context menu.
-4. Click **Open** again on the prompt.
-
-This permanently bypasses Gatekeeper for this app. You only need to do this once.
-
----
-
-## Architecture
-
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full stack overview and design philosophy.
-
-See [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) for typography, colors, and UI rules.
+The price is indifferent to your decision. So should you be.
 
 ## License
 
-MIT
+See [LICENSE](LICENSE).
+
+<img src="docs/void.png" alt="" width="100%">
+
+<div align="center">
+
+*Perfection is not a feature. It is a prerequisite.*
+
+**Write in the void.**
+
+</div>

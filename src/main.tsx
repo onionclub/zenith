@@ -7,13 +7,17 @@ import { preloadVoices } from './lib/tts'
 // Preload TTS voices so they're ready when user clicks Read Aloud
 preloadVoices()
 
-// JS-based dark mode — sets class on <html> for reliable dark mode in WebView2
+// Theme: check stored preference, fall back to system preference
 function applyTheme() {
-  const dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  const stored = localStorage.getItem('zenith_theme')
+  const dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
   document.documentElement.classList.toggle('dark', dark)
 }
 applyTheme()
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme)
+// Listen for system theme changes (only relevant when no stored preference is set)
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (!localStorage.getItem('zenith_theme')) applyTheme()
+})
 
 // Global error handler — renders error directly to DOM if React crashes
 window.addEventListener('error', (event) => {

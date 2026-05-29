@@ -1,5 +1,5 @@
 import { motion, useMotionValue } from 'framer-motion'
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import useStore from '../store/useStore'
 import SleepingCat from '../companions/SleepingCat'
 import LoyalDog from '../companions/LoyalDog'
@@ -8,17 +8,22 @@ import Hourglass from '../companions/Hourglass'
 import Constellation from '../companions/Constellation'
 import Monolith from '../companions/Monolith'
 
-const companions = {
-  cat: SleepingCat,
-  dog: LoyalDog,
-}
-
+const companions = { cat: SleepingCat, dog: LoyalDog }
 const POS_KEY = 'zenith_companion_pos'
 
-function loadPos(): { x: number; y: number } {
+// Validate saved position is actually on-screen
+function loadPos(windowW: number, windowH: number, size: number): { x: number; y: number } {
   try {
     const raw = localStorage.getItem(POS_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const pos = JSON.parse(raw)
+      // Only use saved position if it keeps the companion at least partially visible
+      if (pos.x > -size && pos.x < windowW && pos.y > -size && pos.y < windowH) {
+        return pos
+      }
+      // Saved position is off-screen — clear it
+      localStorage.removeItem(POS_KEY)
+    }
   } catch { /* ignore */ }
   return { x: -1, y: -1 }
 }
@@ -32,10 +37,18 @@ function Companion() {
   const companionChoice = useStore((s) => s.companionChoice)
   const companionSize = useStore((s) => s.companionSize)
   const uiScale = useStore((s) => s.uiScale)
+  const [winSize, setWinSize] = useState({ w: window.innerWidth, h: window.innerHeight })
 
-  const saved = loadPos()
-  const defaultX = saved.x > 0 ? saved.x : window.innerWidth - companionSize - 40
-  const defaultY = saved.y > 0 ? saved.y : 24
+  // Track window size for drag constraints
+  useEffect(() => {
+    const onResize = () => setWinSize({ w: window.innerWidth, h: window.innerHeight })
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  const saved = loadPos(winSize.w, winSize.h, companionSize)
+  const defaultX = saved.x >= 0 ? saved.x : winSize.w - companionSize - 40
+  const defaultY = saved.y >= 0 ? saved.y : 24
 
   const mx = useMotionValue(defaultX)
   const my = useMotionValue(defaultY)
@@ -46,10 +59,10 @@ function Companion() {
     return () => { unsubX(); unsubY() }
   }, [mx, my])
 
-  const Component = useMemo(() => {
+  const Comp = useMemo(() => {
     switch (tier) {
       case 'void': return null
-      case 'silence': return companions[companionChoice]
+      case 'silence': return companions[companionChoice] || SleepingCat
       case 'obsidian': return Bonsai
       case 'onyx': return Hourglass
       case 'zenith': return Constellation
@@ -58,12 +71,13 @@ function Companion() {
     }
   }, [tier, companionChoice])
 
-  if (!Component) return null
+  if (!Comp) return null
 
   return (
     <motion.div
       drag
       dragMomentum={false}
+      dragConstraints={{ left: 0, right: winSize.w - companionSize, top: 0, bottom: winSize.h - companionSize }}
       style={{
         position: 'fixed',
         x: mx,
@@ -72,11 +86,11 @@ function Companion() {
         height: companionSize,
         cursor: 'grab',
         zIndex: 9999,
-        color: '#6B5D4F',
+        color: '#8B7355',
         zoom: uiScale,
       }}
     >
-      <Component />
+      <Comp />
     </motion.div>
   )
 }

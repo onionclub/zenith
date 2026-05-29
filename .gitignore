@@ -25,3 +25,7 @@ dist-ssr
 
 # Local-only Cargo config (Windows-specific target-dir)
 src-tauri/.cargo/
+
+# Test artifacts
+test-results/
+test-sidebar.mjs

@@ -103,11 +103,20 @@ function Editor() {
     }
 
     saveTimerRef.current = setTimeout(async () => {
-      if (!editor || !activeDocPath) return
+      if (!editor) return
+      const state = useStore.getState()
+      const path = state.activeDocPath
+      if (!path) return
 
       try {
-        const json = editor.getJSON()
-        await saveDocument(activeDocPath, json)
+        const json = editor.getJSON() as Record<string, unknown>
+        const doc = state.documents.find(d => d.path === path)
+        if (doc) {
+          json.title = doc.title
+          json.group = doc.group
+          json.tags = doc.tags
+        }
+        await saveDocument(path, json)
         setSaveStatus('saved')
       } catch {
         setSaveStatus('idle')

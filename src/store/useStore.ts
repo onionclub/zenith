@@ -28,6 +28,8 @@ interface StoreState {
   preferredVoice: string
   saveStatus: 'idle' | 'saving' | 'saved'
   editorInstance: Editor | null
+  theme: 'dark' | 'light'
+  toggleTheme: () => void
   setDocuments: (docs: Document[]) => void
   addDocument: (doc: Document) => void
   removeDocument: (id: string) => void
@@ -70,6 +72,16 @@ const useStore = create<StoreState>((set) => ({
   preferredVoice: 'auto',
   saveStatus: 'idle',
   editorInstance: null,
+  theme: (() => {
+    try { return (localStorage.getItem('zenith_theme') as 'dark' | 'light') || 'dark' } catch { return 'dark' }
+  })(),
+  toggleTheme: () =>
+    set((state) => {
+      const next = state.theme === 'dark' ? 'light' : 'dark'
+      localStorage.setItem('zenith_theme', next)
+      document.documentElement.classList.toggle('dark', next === 'dark')
+      return { theme: next }
+    }),
   setDocuments: (documents) => set({ documents }),
   addDocument: (doc) =>
     set((state) => ({ documents: [...state.documents, doc] })),

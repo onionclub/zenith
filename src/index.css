@@ -1,8 +1,20 @@
 @import "tailwindcss";
 
+/* Use class-based dark mode so the toggle works (instead of default prefers-color-scheme) */
+@variant dark (&:where(.dark, .dark *));
+
+/* Smooth theme transitions on structural elements */
+body, main, aside, header, div, section, article, nav,
+h1, h2, h3, h4, h5, h6, p, span, a, button:not([data-no-transition]),
+blockquote, code, pre, table, th, td, li, label {
+  transition-property: color, background-color, border-color, outline-color;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
 @theme {
   --color-paper: #F9F8F4;
-  --color-ink: #B8A898;
+  --color-ink: #121212;
   --color-slate-dark: #121212;
   --color-bone: #D4CFC4;
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -20,19 +32,14 @@
   min-height: 100%;
   outline: none;
   font-family: var(--font-serif);
-  color: #b8a898 !important;
+  color: var(--color-ink) !important;
   font-size: var(--editor-font-size, 1.125rem);
   line-height: 1.75;
 }
 
 /* Dark mode text color */
-@media (prefers-color-scheme: dark) {
-  .tiptap.ProseMirror {
-    color: #d4cfc4 !important;
-  }
-}
 html.dark .tiptap.ProseMirror {
-  color: #d4cfc4 !important;
+  color: var(--color-bone) !important;
 }
 
 /* Typography Elements */
@@ -53,7 +60,7 @@ html.dark .tiptap.ProseMirror {
 .tiptap h3 { font-size: 1.375rem; }
 
 .tiptap blockquote {
-  border-left: 3px solid #b8a898;
+  border-left: 3px solid var(--color-ink);
   padding-left: 1.25rem;
   margin-left: 0;
   margin-bottom: 1.25rem;
@@ -61,13 +68,8 @@ html.dark .tiptap.ProseMirror {
   opacity: 0.8;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tiptap blockquote {
-    border-left-color: #d4cfc4;
-  }
-}
 html.dark .tiptap blockquote {
-  border-left-color: #d4cfc4;
+  border-left-color: var(--color-bone);
 }
 
 .tiptap code {
@@ -78,11 +80,6 @@ html.dark .tiptap blockquote {
   font-size: 0.9em;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tiptap code {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-}
 html.dark .tiptap code {
   background-color: rgba(255, 255, 255, 0.1);
 }
@@ -122,33 +119,28 @@ html.dark .tiptap code {
 }
 
 .tiptap ul[data-type="taskList"] li label input[type="checkbox"] {
-  accent-color: #b8a898;
+  accent-color: var(--color-ink);
   cursor: pointer;
   width: 16px;
   height: 16px;
 }
 
 html.dark .tiptap ul[data-type="taskList"] li label input[type="checkbox"] {
-  accent-color: #d4cfc4;
+  accent-color: var(--color-bone);
 }
 
 /* Placeholder */
 .tiptap.ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #b8a898;
+  color: var(--color-ink);
   opacity: 0.3;
   pointer-events: none;
   height: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .tiptap.ProseMirror p.is-editor-empty:first-child::before {
-    color: #d4cfc4;
-  }
-}
 html.dark .tiptap.ProseMirror p.is-editor-empty:first-child::before {
-  color: #d4cfc4;
+  color: var(--color-bone);
 }
 
 /* Tippy Overrides */
@@ -186,14 +178,14 @@ html.dark .tiptap.ProseMirror p.is-editor-empty:first-child::before {
 
 .tiptap table:hover td,
 .tiptap table:hover th {
-  border-color: #b8a898;
+  border-color: var(--color-ink);
   opacity: 0.3;
 }
 
 .tiptap table td:focus,
 .tiptap table th:focus,
 .tiptap table .selectedCell {
-  border-color: #b8a898 !important;
+  border-color: var(--color-ink) !important;
   opacity: 1 !important;
   background-color: rgba(0,0,0,0.02);
 }
@@ -214,23 +206,23 @@ html.dark .tiptap.ProseMirror p.is-editor-empty:first-child::before {
 }
 
 .tiptap img.ProseMirror-selectednode {
-  outline: 2px solid #b8a898;
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 
 html.dark .tiptap img.ProseMirror-selectednode {
-  outline-color: #d4cfc4;
+  outline-color: var(--color-bone);
 }
 
 html.dark .tiptap table:hover td,
 html.dark .tiptap table:hover th {
-  border-color: #d4cfc4;
+  border-color: var(--color-bone);
 }
 
 html.dark .tiptap table td:focus,
 html.dark .tiptap table th:focus,
 html.dark .tiptap table .selectedCell {
-  border-color: #d4cfc4 !important;
+  border-color: var(--color-bone) !important;
 }
 
 /* Focus Mode Styling */

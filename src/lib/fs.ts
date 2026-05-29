@@ -37,6 +37,10 @@ function extractTitle(json: Record<string, unknown>): string {
   return 'Untitled'
 }
 
+function resolveTitle(json: Record<string, unknown>): string {
+  return (json.title as string) || extractTitle(json)
+}
+
 export async function loadDocuments(): Promise<Document[]> {
   await ensureDocsDir()
 
@@ -51,7 +55,7 @@ export async function loadDocuments(): Promise<Document[]> {
         baseDir: BaseDirectory.AppData,
       })
       const json = JSON.parse(raw)
-      const title = extractTitle(json)
+      const title = resolveTitle(json)
 
       docs.push({
         id: entry.name.replace('.json', ''),
@@ -81,6 +85,41 @@ export async function saveDocument(path: string, json: Record<string, unknown>):
   })
 }
 
+export function generateUniqueTitle(wanted: string, existing: string[]): string {
+  if (!existing.includes(wanted)) return wanted
+  let n = 2
+  let candidate = `${wanted} (${n})`
+  while (existing.includes(candidate)) {
+    n++
+    candidate = `${wanted} (${n})`
+  }
+  return candidate
+}
+
+export async function renameDocument(path: string, newTitle: string): Promise<string> {
+  const raw = await readTextFile(path, { baseDir: BaseDirectory.AppData })
+  const json = JSON.parse(raw)
+  json.title = newTitle
+  await saveDocument(path, json)
+  return newTitle
+}
+
+export async function renameGroup(oldName: string, newName: string): Promise<void> {
+  const entries = await readDir(DOCS_DIR, { baseDir: BaseDirectory.AppData })
+  for (const entry of entries) {
+    if (!entry.name.endsWith('.json')) continue
+    try {
+      const path = `${DOCS_DIR}/${entry.name}`
+      const raw = await readTextFile(path, { baseDir: BaseDirectory.AppData })
+      const json = JSON.parse(raw)
+      if (json.group === oldName) {
+        json.group = newName
+        await saveDocument(path, json)
+      }
+    } catch { /* skip malformed files */ }
+  }
+}
+
 export async function createDocument(): Promise<Document> {
   await ensureDocsDir()
 
@@ -89,6 +128,7 @@ export async function createDocument(): Promise<Document> {
   const filePath = `${DOCS_DIR}/${fileName}.json`
 
   const content = {
+    title: 'Untitled',
     type: 'doc',
     content: [
       {

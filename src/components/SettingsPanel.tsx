@@ -251,7 +251,7 @@ function SettingsPanel() {
               <div className="border-t border-slate-200 dark:border-slate-700 pt-4 flex items-center justify-between">
                 <div>
                   <div className="font-serif text-sm text-ink dark:text-bone">Zenith</div>
-                  <div className="font-sans text-[10px] text-ink/30 dark:text-bone/30">v1.0.6 · Offline-first</div>
+                  <div className="font-sans text-[10px] text-ink/30 dark:text-bone/30">v1.1.2 · Offline-first</div>
                 </div>
                 <Type className="w-5 h-5 text-ink/20 dark:text-bone/20" />
               </div>
